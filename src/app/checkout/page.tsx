@@ -4,7 +4,10 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { CreditCard, Lock, CheckCircle, ArrowLeft, Package, Truck } from "lucide-react"
+import AuthGuard from "@/components/ui/AuthGuard"
+import Breadcrumb from "@/components/Breadcrumb"
+import { CreditCard, Lock, CheckCircle, Package, Truck } from "lucide-react"
+import { validarInscripcion } from "@/lib/validation"
 
 type CartItem = {
   id: number
@@ -24,11 +27,26 @@ export default function CheckoutPage() {
     nombre: "", apellido: "", correo: "", telefono: "",
     nombreTarjeta: "", numeroTarjeta: "", expiracion: "", cvv: ""
   })
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
+  const [generalError, setGeneralError] = useState<string | null>(null)
 
   useEffect(() => {
+    // Cargar carrito
     const stored = localStorage.getItem("nail_store_cart")
     if (stored) {
       setItems(JSON.parse(stored))
+    }
+
+    // Pre-llenar datos del usuario autenticado
+    const userEmail = localStorage.getItem("user_email") || ""
+    const userName = localStorage.getItem("user_nombre") || ""
+    
+    if (userEmail || userName) {
+      setFormData(prev => ({
+        ...prev,
+        nombre: userName,
+        correo: userEmail
+      }))
     }
   }, [])
 
@@ -48,7 +66,19 @@ export default function CheckoutPage() {
     setFormData({ ...formData, [e.target.name]: value })
   }
 
-  const handlePago = () => {
+  const handlePago = (e: React.FormEvent) => {
+    e.preventDefault()
+    setFieldErrors({})
+    setGeneralError(null)
+
+    // Validar formulario
+    const validacion = validarInscripcion(formData)
+    if (!validacion.valido) {
+      setFieldErrors(validacion.errores)
+      setGeneralError("Por favor completa correctamente todos los campos")
+      return
+    }
+
     // Simulación de pago exitoso
     alert("¡Pago realizado con éxito! Gracias por tu compra en Brenn's")
     
@@ -58,32 +88,35 @@ export default function CheckoutPage() {
 
     // Redirigir al inicio o a una página de éxito
     setTimeout(() => {
-      window.location.href = "/gracias"
+      window.location.href = "/catalogo"
     }, 1500)
   }
 
   if (items.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-pink-50 to-white flex items-center justify-center py-20">
-        <div className="text-center">
-          <Package className="w-24 h-24 mx-auto text-pink-200 mb-6" />
-          <h2 className="text-3xl font-bold text-gray-700 mb-4">Tu carrito está vacío</h2>
-          <Link href="/catalogo" className="bg-pink-600 hover:bg-pink-700 text-white font-bold px-10 py-4 rounded-full text-xl">
-            Volver al Catálogo
-          </Link>
+      <AuthGuard>
+        <div className="min-h-screen bg-gradient-to-br from-pink-50 to-white flex items-center justify-center py-20">
+          <div className="text-center">
+            <Package className="w-24 h-24 mx-auto text-pink-200 mb-6" />
+            <h2 className="text-3xl font-bold text-gray-700 mb-4">Tu carrito está vacío</h2>
+            <Link href="/catalogo" className="bg-pink-600 hover:bg-pink-700 text-white font-bold px-10 py-4 rounded-full text-xl">
+              Volver al Catálogo
+            </Link>
+          </div>
         </div>
-      </div>
+      </AuthGuard>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 to-white py-12">
-      <div className="max-w-7xl mx-auto px-6">
+    <AuthGuard>
+      <div className="min-h-screen bg-gradient-to-br from-pink-50 to-white py-12">
+        <div className="max-w-7xl mx-auto px-6">
 
-        <Link href="/carrito" className="inline-flex items-center gap-2 text-pink-600 hover:text-pink-700 font-semibold mb-8">
-          <ArrowLeft className="w-5 h-5" />
-          Volver al carrito
-        </Link>
+        <Breadcrumb items={[
+          { label: "Carrito", href: "/carrito" },
+          { label: "Checkout", href: "#", active: true }
+        ]} />
 
         <h1 className="text-5xl font-bold text-center text-pink-600 mb-12">
           Finalizar Compra
@@ -99,7 +132,7 @@ export default function CheckoutPage() {
                 Pago con Tarjeta
               </h2>
 
-              <form className="space-y-8" onSubmit={(e) => e.preventDefault()}>
+              <form className="space-y-8" onSubmit={handlePago}>
 
                 {/* Datos personales */}
                 <div className="grid md:grid-cols-2 gap-6">
@@ -108,20 +141,24 @@ export default function CheckoutPage() {
                     <input
                       name="nombre"
                       onChange={handleChange}
-                      className="w-full px-6 py-4 rounded-full border-2 border-pink-200 focus:border-pink-500 outline-none transition"
+                      className={`w-full px-6 py-4 rounded-full border-2 outline-none transition-all ${
+                        fieldErrors.nombre ? "border-red-500 focus:ring-2 focus:ring-red-200" : "border-pink-200 focus:border-pink-500"
+                      }`}
                       placeholder="Ana Karen"
-                      required
                     />
+                    {fieldErrors.nombre && <p className="text-red-600 text-xs mt-1">{fieldErrors.nombre}</p>}
                   </div>
                   <div>
                     <label className="block text-lg font-bold mb-2">Apellido</label>
                     <input
                       name="apellido"
                       onChange={handleChange}
-                      className="w-full px-6 py-4 rounded-full border-2 border-pink-200 focus:border-pink-500 outline-none transition"
+                      className={`w-full px-6 py-4 rounded-full border-2 outline-none transition-all ${
+                        fieldErrors.apellido ? "border-red-500 focus:ring-2 focus:ring-red-200" : "border-pink-200 focus:border-pink-500"
+                      }`}
                       placeholder="Gómez López"
-                      required
                     />
+                    {fieldErrors.apellido && <p className="text-red-600 text-xs mt-1">{fieldErrors.apellido}</p>}
                   </div>
                 </div>
 
@@ -131,10 +168,12 @@ export default function CheckoutPage() {
                     type="email"
                     name="correo"
                     onChange={handleChange}
-                    className="w-full px-6 py-4 rounded-full border-2 border-pink-200 focus:border-pink-500 outline-none transition"
+                    className={`w-full px-6 py-4 rounded-full border-2 outline-none transition-all ${
+                      fieldErrors.correo ? "border-red-500 focus:ring-2 focus:ring-red-200" : "border-pink-200 focus:border-pink-500"
+                    }`}
                     placeholder="ana@ejemplo.com"
-                    required
                   />
+                  {fieldErrors.correo && <p className="text-red-600 text-xs mt-1">{fieldErrors.correo}</p>}
                 </div>
 
                 <div>
@@ -144,11 +183,13 @@ export default function CheckoutPage() {
                     <input
                       name="telefono"
                       onChange={handleChange}
-                      className="w-full px-6 py-4 rounded-r-full border-2 border-pink-200 focus:border-pink-500 outline-none transition"
+                      className={`w-full px-6 py-4 rounded-r-full border-2 outline-none transition-all ${
+                        fieldErrors.telefono ? "border-red-500 focus:ring-2 focus:ring-red-200" : "border-pink-200 focus:border-pink-500"
+                      }`}
                       placeholder="961 123 4567"
-                      required
                     />
                   </div>
+                  {fieldErrors.telefono && <p className="text-red-600 text-xs mt-1">{fieldErrors.telefono}</p>}
                 </div>
 
                 {/* Datos de tarjeta */}
@@ -157,10 +198,12 @@ export default function CheckoutPage() {
                   <input
                     name="nombreTarjeta"
                     onChange={handleChange}
-                    className="w-full px-6 py-4 rounded-full border-2 border-pink-200 focus:border-pink-500 outline-none transition"
+                    className={`w-full px-6 py-4 rounded-full border-2 outline-none transition-all ${
+                      fieldErrors.nombreTarjeta ? "border-red-500 focus:ring-2 focus:ring-red-200" : "border-pink-200 focus:border-pink-500"
+                    }`}
                     placeholder="Ana Karen Gómez López"
-                    required
                   />
+                  {fieldErrors.nombreTarjeta && <p className="text-red-600 text-xs mt-1">{fieldErrors.nombreTarjeta}</p>}
                 </div>
 
                 <div className="grid md:grid-cols-3 gap-6">
@@ -170,11 +213,13 @@ export default function CheckoutPage() {
                       name="numeroTarjeta"
                       onChange={handleChange}
                       maxLength={19}
-                      className="w-full px-6 py-4 pl-16 rounded-full border-2 border-pink-200 focus:border-pink-500 outline-none transition"
+                      className={`w-full px-6 py-4 pl-16 rounded-full border-2 outline-none transition-all ${
+                        fieldErrors.numeroTarjeta ? "border-red-500 focus:ring-2 focus:ring-red-200" : "border-pink-200 focus:border-pink-500"
+                      }`}
                       placeholder="1234 5678 9012 3456"
-                      required
                     />
                     <CreditCard className="absolute left-5 top-12 w-8 h-8 text-pink-600" />
+                    {fieldErrors.numeroTarjeta && <p className="text-red-600 text-xs mt-1">{fieldErrors.numeroTarjeta}</p>}
                   </div>
 
                   <div>
@@ -183,9 +228,11 @@ export default function CheckoutPage() {
                       name="expiracion"
                       onChange={handleChange}
                       placeholder="12 / 28"
-                      className="w-full px-6 py-4 rounded-full border-2 border-pink-200 focus:border-pink-500 outline-none transition"
-                      required
+                      className={`w-full px-6 py-4 rounded-full border-2 outline-none transition-all ${
+                        fieldErrors.expiracion ? "border-red-500 focus:ring-2 focus:ring-red-200" : "border-pink-200 focus:border-pink-500"
+                      }`}
                     />
+                    {fieldErrors.expiracion && <p className="text-red-600 text-xs mt-1">{fieldErrors.expiracion}</p>}
                   </div>
                 </div>
 
@@ -196,19 +243,23 @@ export default function CheckoutPage() {
                     onChange={handleChange}
                     maxLength={4}
                     placeholder="123"
-                    className="w-full px-6 py-4 rounded-full border-2 border-pink-200 focus:border-pink-500 outline-none transition"
-                    required
+                    className={`w-full px-6 py-4 rounded-full border-2 outline-none transition-all ${
+                      fieldErrors.cvv ? "border-red-500 focus:ring-2 focus:ring-red-200" : "border-pink-200 focus:border-pink-500"
+                    }`}
                   />
+                  {fieldErrors.cvv && <p className="text-red-600 text-xs mt-1">{fieldErrors.cvv}</p>}
                 </div>
 
-                <div className="flex items-center gap-3 text-gray-600 bg-pink-50 p-4 rounded-2xl">
-                  <Lock className="w-7 h-7 text-pink-600 flex-shrink-0" />
-                  <p className="text-lg">Pago 100% seguro • Encriptación SSL • Tus datos nunca se guardan</p>
-                </div>
+                
+
+                {generalError && (
+                  <div className="p-3 rounded-lg bg-red-50 text-red-600 text-sm text-center border border-red-100">
+                    {generalError}
+                  </div>
+                )}
 
                 <button
-                  type="button"
-                  onClick={handlePago}
+                  type="submit"
                   className="w-full bg-pink-600 hover:bg-pink-700 text-white font-bold text-2xl py-6 rounded-full shadow-2xl transition transform hover:scale-105 active:scale-95 flex items-center justify-center gap-4"
                 >
                   <CheckCircle className="w-9 h-9" />
@@ -267,7 +318,8 @@ export default function CheckoutPage() {
             </div>
           </div>
         </div>
+        </div>
       </div>
-    </div>
+    </AuthGuard>
   )
 }

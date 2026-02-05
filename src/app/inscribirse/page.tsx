@@ -3,8 +3,10 @@
 
 import { useSearchParams } from "next/navigation"
 import { useState } from "react"
+import AuthGuard from "@/components/ui/AuthGuard"
 import { CreditCard, Lock, CheckCircle, ArrowLeft, User, Calendar, AlertCircle } from "lucide-react"
 import Link from "next/link"
+import { validarInscripcion } from "@/lib/validation"
 
 export default function InscribirsePage() {
   const searchParams = useSearchParams()
@@ -22,14 +24,35 @@ export default function InscribirsePage() {
     nombre: "", apellido: "", correo: "", telefono: "",
     nombreTarjeta: "", numeroTarjeta: "", expiracion: "", cvv: ""
   })
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
+  const [generalError, setGeneralError] = useState<string | null>(null)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    setFieldErrors({})
+    setGeneralError(null)
+
+    // Validar formulario
+    const validacion = validarInscripcion(formData)
+    if (!validacion.valido) {
+      setFieldErrors(validacion.errores)
+      setGeneralError("Por favor completa correctamente todos los campos")
+      return
+    }
+
+    // Si pasa validación, mostrar mensaje de éxito
+    alert(`¡FELICIDADES! Te inscribiste con éxito al curso:\n"${curso.titulo}"\nTe enviaremos todos los detalles por correo y WhatsApp`)
+    setTimeout(() => window.location.href = "/cursos", 2000)
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 to-white py-12">
-      <div className="max-w-7xl mx-auto px-6">
+    <AuthGuard>
+      <div className="min-h-screen bg-gradient-to-br from-pink-50 to-white py-12">
+        <div className="max-w-7xl mx-auto px-6">
 
         <h1 className="sr-only">Inscripción y pago del curso - Brenn's</h1>
 
@@ -44,21 +67,27 @@ export default function InscribirsePage() {
                 <div className="px-8 py-4 rounded-full bg-pink-600 text-white font-bold">Datos y Pago</div>
               </div>
 
-              <form className="space-y-8" aria-label="Formulario de inscripción y pago">
+              <form className="space-y-8" onSubmit={handleSubmit} aria-label="Formulario de inscripción y pago">
 
                 {/* Nombre y Apellido */}
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
                     <label htmlFor="nombre" className="block text-lg font-bold mb-2">Nombre</label>
-                    <input id="nombre" name="nombre" onChange={handleChange} required
-                      className="w-full px-6 py-4 rounded-full border-2 border-pink-200 focus:border-pink-500 focus:outline-none"
+                    <input id="nombre" name="nombre" onChange={handleChange} 
+                      className={`w-full px-6 py-4 rounded-full border-2 focus:outline-none transition-all ${
+                        fieldErrors.nombre ? "border-red-500 focus:ring-2 focus:ring-red-200" : "border-pink-200 focus:border-pink-500"
+                      }`}
                       placeholder="Ruth" />
+                    {fieldErrors.nombre && <p className="text-red-600 text-xs mt-1">{fieldErrors.nombre}</p>}
                   </div>
                   <div>
                     <label htmlFor="apellido" className="block text-lg font-bold mb-2">Apellido</label>
-                    <input id="apellido" name="apellido" onChange={handleChange} required
-                      className="w-full px-6 py-4 rounded-full border-2 border-pink-200 focus:border-pink-500 focus:outline-none"
+                    <input id="apellido" name="apellido" onChange={handleChange} 
+                      className={`w-full px-6 py-4 rounded-full border-2 focus:outline-none transition-all ${
+                        fieldErrors.apellido ? "border-red-500 focus:ring-2 focus:ring-red-200" : "border-pink-200 focus:border-pink-500"
+                      }`}
                       placeholder="Barrientos Angeles" />
+                    {fieldErrors.apellido && <p className="text-red-600 text-xs mt-1">{fieldErrors.apellido}</p>}
                   </div>
                 </div>
 
@@ -66,18 +95,24 @@ export default function InscribirsePage() {
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
                     <label htmlFor="correo" className="block text-lg font-bold mb-2">Correo electrónico</label>
-                    <input id="correo" type="email" name="correo" onChange={handleChange} required
-                      className="w-full px-6 py-4 rounded-full border-2 border-pink-200 focus:border-pink-500 focus:outline-none"
+                    <input id="correo" type="email" name="correo" onChange={handleChange} 
+                      className={`w-full px-6 py-4 rounded-full border-2 focus:outline-none transition-all ${
+                        fieldErrors.correo ? "border-red-500 focus:ring-2 focus:ring-red-200" : "border-pink-200 focus:border-pink-500"
+                      }`}
                       placeholder="ruth.barrientos@uthh.edu.mx" />
+                    {fieldErrors.correo && <p className="text-red-600 text-xs mt-1">{fieldErrors.correo}</p>}
                   </div>
                   <div>
                     <label htmlFor="telefono" className="block text-lg font-bold mb-2">Teléfono</label>
                     <div className="flex">
                       <span className="inline-flex items-center px-5 rounded-l-full bg-gray-100 border-2 border-pink-200 border-r-0 text-gray-600">MX +52</span>
-                      <input id="telefono" name="telefono" onChange={handleChange} required
-                        className="w-full px-6 py-4 rounded-r-full border-2 border-pink-200 focus:border-pink-500 focus:outline-none"
+                      <input id="telefono" name="telefono" onChange={handleChange} 
+                        className={`w-full px-6 py-4 rounded-r-full border-2 focus:outline-none transition-all ${
+                          fieldErrors.telefono ? "border-red-500 focus:ring-2 focus:ring-red-200" : "border-pink-200 focus:border-pink-500"
+                        }`}
                         placeholder="961 123 4567" />
                     </div>
+                    {fieldErrors.telefono && <p className="text-red-600 text-xs mt-1">{fieldErrors.telefono}</p>}
                   </div>
                 </div>
 
@@ -85,47 +120,58 @@ export default function InscribirsePage() {
                 <div className="space-y-6">
                   <div className="relative">
                     <label htmlFor="nombreTarjeta" className="block text-lg font-bold mb-2">Nombre en la tarjeta</label>
-                    <input id="nombreTarjeta" name="nombreTarjeta" onChange={handleChange} required
-                      className="w-full px-6 py-4 rounded-full border-2 border-pink-200 focus:border-pink-500 focus:outline-none"
+                    <input id="nombreTarjeta" name="nombreTarjeta" onChange={handleChange} 
+                      className={`w-full px-6 py-4 rounded-full border-2 focus:outline-none transition-all ${
+                        fieldErrors.nombreTarjeta ? "border-red-500 focus:ring-2 focus:ring-red-200" : "border-pink-200 focus:border-pink-500"
+                      }`}
                       placeholder="Ruth Barrientos Angeles" />
+                    {fieldErrors.nombreTarjeta && <p className="text-red-600 text-xs mt-1">{fieldErrors.nombreTarjeta}</p>}
                   </div>
 
                   <div className="grid md:grid-cols-3 gap-6">
                     <div className="md:col-span-2 relative">
                       <label htmlFor="numeroTarjeta" className="block text-lg font-bold mb-2">Número de tarjeta</label>
-                      <input id="numeroTarjeta" name="numeroTarjeta" onChange={handleChange} maxLength={19} required
-                        className="w-full px-6 py-4 pl-16 rounded-full border-2 border-pink-200 focus:border-pink-500 focus:outline-none"
+                      <input id="numeroTarjeta" name="numeroTarjeta" onChange={handleChange} maxLength={19} 
+                        className={`w-full px-6 py-4 pl-16 rounded-full border-2 focus:outline-none transition-all ${
+                          fieldErrors.numeroTarjeta ? "border-red-500 focus:ring-2 focus:ring-red-200" : "border-pink-200 focus:border-pink-500"
+                        }`}
                         placeholder="1234 5678 9012 3456" />
                       <CreditCard className="absolute left-5 top-12 w-8 h-8 text-pink-600 pointer-events-none" />
+                      {fieldErrors.numeroTarjeta && <p className="text-red-600 text-xs mt-1">{fieldErrors.numeroTarjeta}</p>}
                     </div>
                     <div>
                       <label htmlFor="expiracion" className="block text-lg font-bold mb-2">MM/AA</label>
-                      <input id="expiracion" name="expiracion" onChange={handleChange} required
-                        className="w-full px-6 py-4 rounded-full border-2 border-pink-200 focus:border-pink-500 focus:outline-none"
+                      <input id="expiracion" name="expiracion" onChange={handleChange} 
+                        className={`w-full px-6 py-4 rounded-full border-2 focus:outline-none transition-all ${
+                          fieldErrors.expiracion ? "border-red-500 focus:ring-2 focus:ring-red-200" : "border-pink-200 focus:border-pink-500"
+                        }`}
                         placeholder="12/28" />
+                      {fieldErrors.expiracion && <p className="text-red-600 text-xs mt-1">{fieldErrors.expiracion}</p>}
                     </div>
                     <div className="md:col-span-3">
                       <label htmlFor="cvv" className="block text-lg font-bold mb-2">CVV</label>
-                      <input id="cvv" name="cvv" onChange={handleChange} maxLength={4} required
-                        className="w-full px-6 py-4 rounded-full border-2 border-pink-200 focus:border-pink-500 focus:outline-none"
+                      <input id="cvv" name="cvv" onChange={handleChange} maxLength={4} 
+                        className={`w-full px-6 py-4 rounded-full border-2 focus:outline-none transition-all ${
+                          fieldErrors.cvv ? "border-red-500 focus:ring-2 focus:ring-red-200" : "border-pink-200 focus:border-pink-500"
+                        }`}
                         placeholder="123" />
+                      {fieldErrors.cvv && <p className="text-red-600 text-xs mt-1">{fieldErrors.cvv}</p>}
                     </div>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 text-gray-600">
-                  <Lock className="w-6 h-6 text-pink-600" />
-                  <p>Pago 100% seguro con encriptación SSL • Tus datos nunca se guardan</p>
-                </div>
+              
+
+                {generalError && (
+                  <div className="p-3 rounded-lg bg-red-50 text-red-600 text-sm text-center border border-red-100">
+                    {generalError}
+                  </div>
+                )}
 
                 {/* BOTÓN DE PAGO */}
                 <div className="text-center pt-8">
                   <button
-                    type="button"
-                    onClick={() => {
-                      alert(`¡FELICIDADES RUTH! Te inscribiste con éxito al curso:\n"${curso.titulo}"\nTe enviaremos todos los detalles por correo y WhatsApp`)
-                      setTimeout(() => window.location.href = "/cursos", 2000)
-                    }}
+                    type="submit"
                     className="bg-pink-600 hover:bg-pink-700 text-white font-bold text-2xl px-16 py-6 rounded-full shadow-2xl transition transform hover:scale-105 inline-flex items-center gap-4"
                   >
                     <CheckCircle className="w-8 h-8" />
@@ -180,7 +226,8 @@ export default function InscribirsePage() {
             Volver al catálogo de cursos
           </Link>
         </div>
+        </div>
       </div>
-    </div>
+    </AuthGuard>
   )
 }

@@ -4,6 +4,7 @@
 import Link from "next/link"
 import { Calendar, Clock, CheckCircle, ShoppingBag, User, ArrowRight } from "lucide-react"
 import { useState } from "react"
+import AuthGuard from "@/components/ui/AuthGuard"
 
 export default function MisCursosPage() {
   const [pestana, setPestana] = useState("cursos")
@@ -25,8 +26,9 @@ export default function MisCursosPage() {
   ]
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-pink-50 py-8 sm:py-12">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6">
+    <AuthGuard>
+      <main className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-pink-50 py-8 sm:py-12">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
 
         {/* Título */}
         <header className="text-center mb-10">
@@ -164,7 +166,8 @@ export default function MisCursosPage() {
             ¡Gracias por ser parte de la familia Brenn's, Ruth! ♡
           </p>
         </div>
-      </div>
-    </main>
+        </div>
+      </main>
+    </AuthGuard>
   )
 }

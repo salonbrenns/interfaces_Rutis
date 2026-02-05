@@ -1,19 +1,30 @@
 // src/components/AddToCarButton.tsx
 "use client"
 import { ShoppingBag } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 // Define la estructura del producto que necesita el botón
 interface Producto {
-  id: number
-  nombre: string
-  categoria: string
-  precio: number
-  img: string
+  id: number
+  nombre: string
+  categoria: string
+  precio: number
+  img: string
 }
 
 export function AddToCarButton({ producto }: { producto: Producto }) {
-  const agregarAlCarrito = () => {
-    // Toda la lógica de cliente (localStorage, document) va aquí
+  const router = useRouter()
+
+  const agregarAlCarrito = () => {
+    // Verificar si el usuario está autenticado
+    const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null
+    if (!token) {
+      // Redirigir a login si no está autenticado
+      router.push("/login")
+      return
+    }
+
+    // Toda la lógica de cliente (localStorage, document) va aquí (solo se ejecuta si está autenticado)
     const stored = localStorage.getItem("nail_store_cart") || "[]"
     const carrito = JSON.parse(stored)
 

@@ -1,191 +1,103 @@
-// src/app/producto/[id]/page.tsx
 "use client"
+
+import { useState, use, useEffect } from "react" 
 import Image from "next/image"
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { ChevronLeft, Star, Plus, Minus, ShoppingBag, CheckCircle } from "lucide-react"
+import { ChevronLeft, Star, Plus, Minus, ShoppingBag } from "lucide-react"
 
-// Base de datos de productos (actualizada con QR)
+// Simulación de base de datos (Lo ideal es que esto esté en /lib/data.ts)
 const productos = {
-  "1": {
-    id: 1,
-    nombre: "Esmalte Rojo",
-    precio: 15000,
-    categoria: "Nail Art",
-    marca: "Renova Matte",
-    img: "/catalogo/Rojo.jpg",
-    qr: "/catalogo/zBTCIY.png",
-    rating: 4.5,
-    reviews: 128,
-    descripcion: "Un hermoso esmalte de color rojo que aporta un toque de elegancia a tus uñas. Su fórmula de larga duración asegura un acabado brillante y duradero.",
-  },
-  "2": {
-    id: 2,
-    nombre: "Removedor Sin Acetona",
-    precio: 16000,
-    categoria: "Foot Care",
-    marca: "Brenn's Care",
-    img: "/catalogo/renovador.jpg",
-    qr: "/catalogo/zBTCIY.png",
-    rating: 4.8,
-    reviews: 89,
-    descripcion: "Removedor suave sin acetona, ideal para uñas sensibles. No reseca ni debilita la uña natural.",
-  },
-  "3": {
-    id: 3,
-    nombre: "Kit Manicura Profesional",
-    precio: 45000,
-    categoria: "Salon Pro",
-    marca: "Brenn's",
-    img: "/catalogo/kit.jpg",
-    qr: "/catalogo/zBTCIY.png",
-    rating: 5.0,
-    reviews: 203,
-    descripcion: "Kit completo con todo lo necesario para manicura profesional en casa o salón.",
-  }
+  "1": { id: 1, nombre: "Esmalte Rojo", precio: 15000, categoria: "Nail Art", marca: "Renova Matte", img: "/catalogo/Rojo.jpg", rating: 4.5, reviews: 128, descripcion: "Un hermoso esmalte de color rojo que aporta un toque de elegancia a tus uñas." },
+  "2": { id: 2, nombre: "Removedor Sin Acetona", precio: 16000, categoria: "Foot Care", marca: "Brenn's Care", img: "/catalogo/renovador.jpg", rating: 4.8, reviews: 89, descripcion: "Removedor suave sin acetona, ideal para uñas sensibles." },
+  "3": { id: 3, nombre: "Kit Manicura Profesional", precio: 45000, categoria: "Salon Pro", marca: "Brenn's", img: "/catalogo/kit.jpg", rating: 5.0, reviews: 203, descripcion: "Kit completo con todo lo necesario para manicura profesional." }
 }
 
-export default async function ProductoDetalle({
-  params
-}: {
-  params: Promise<{ id: string }>
-}) {
-  const { id } = await params
+export default function ProductoDetalle({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params)
   const producto = productos[id as keyof typeof productos]
+  
+  // ESTADOS FALTANTES
+  const [quantity, setQuantity] = useState(1)
+  const [autenticado, setAutenticado] = useState(false)
+  const [cargado, setCargado] = useState(false)
 
-  if (!producto) {
-    notFound()
-  }
+  useEffect(() => {
+    const token = localStorage.getItem("auth_token")
+    setAutenticado(!!token)
+    setCargado(true)
+  }, [])
+
+  if (!producto) return notFound()
+  if (!cargado) return <div className="min-h-screen flex items-center justify-center">Cargando...</div>
 
   const agregarAlCarrito = () => {
     const stored = localStorage.getItem("nail_store_cart") || "[]"
     const carrito = JSON.parse(stored)
-
     const existe = carrito.find((item: any) => item.id === producto.id)
-    const cantidad = 1
-
+    
     let nuevoCarrito
     if (existe) {
       nuevoCarrito = carrito.map((item: any) =>
-        item.id === producto.id
-          ? { ...item, cantidad: item.cantidad + cantidad }
-          : item
+        item.id === producto.id ? { ...item, cantidad: item.cantidad + quantity } : item
       )
     } else {
-      nuevoCarrito = [...carrito, {
-        id: producto.id,
-        nombre: producto.nombre,
-        categoria: producto.categoria,
-        precio: producto.precio,
-        cantidad,
-        img: producto.img,
-      }]
+      nuevoCarrito = [...carrito, { ...producto, cantidad: quantity }]
     }
 
     localStorage.setItem("nail_store_cart", JSON.stringify(nuevoCarrito))
-
-    const toast = document.createElement("div")
-    toast.textContent = `¡${cantidad} ${producto.nombre} agregado al carrito!`
-    toast.style.cssText = `
-      position:fixed;bottom:30px;left:50%;transform:translateX(-50%);
-      background:#ec4899;color:white;padding:16px 40px;border-radius:50px;
-      font-weight:bold;z-index:9999;box-shadow:0 10px 30px rgba(0,0,0,0.3);
-      transition:opacity 0.4s;
-    `
-    document.body.appendChild(toast)
-    setTimeout(() => toast.style.opacity = "0", 2200)
-    setTimeout(() => toast.remove(), 2600)
+    alert(`¡${quantity} ${producto.nombre} agregado(s)!`)
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-pink-50 py-12">
       <div className="max-w-6xl mx-auto px-6">
-
-        {/* Volver */}
-        <Link href="/catalogo" className="inline-flex items-center gap-2 text-pink-600 hover:text-pink-700 font-semibold mb-8">
+        <Link href={autenticado ? "/catalogo-privada" : "/catalogo"} className="inline-flex items-center gap-2 text-pink-600 hover:text-pink-700 font-semibold mb-8">
           <ChevronLeft className="w-5 h-5" />
           Volver al Catálogo
         </Link>
 
-        <div className="grid lg:grid-cols-2 gap-8">
-
-          {/* Imagen del producto - Más pequeña */}
-          <div className="flex flex-col gap-6">
-            <div className="relative rounded-2xl overflow-hidden shadow-xl">
-              <Image
-                src={producto.img}
-                alt={producto.nombre}
-                width={600}
-                height={600}
-                className="object-cover w-full h-auto"
-                priority
-              />
-            </div>
-
-           
+        <div className="grid lg:grid-cols-2 gap-12">
+          {/* Imagen */}
+          <div className="relative rounded-3xl overflow-hidden shadow-2xl bg-white border border-pink-100">
+            <Image src={producto.img} alt={producto.nombre} width={600} height={600} className="object-cover w-full h-auto" priority />
           </div>
 
-          {/* Detalles */}
-          <div className="space-y-8">
-
-            <div>
-              <span className="inline-block bg-pink-100 text-pink-700 px-3 py-1 rounded-full text-sm font-bold mb-4">
-                {producto.categoria}
-              </span>
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-3">
-                {producto.nombre}
-              </h1>
-              <p className="text-lg text-pink-600 font-medium">{producto.marca}</p>
+          {/* Info */}
+          <div className="flex flex-col justify-center">
+            <span className="bg-pink-100 text-pink-700 px-4 py-1 rounded-full text-xs font-bold w-fit mb-4">{producto.categoria}</span>
+            <h1 className="text-4xl font-bold text-gray-900 mb-2">{producto.nombre}</h1>
+            <p className="text-pink-600 font-medium mb-6">{producto.marca}</p>
+            
+            <div className="flex items-center gap-2 mb-6">
+              <Star className="w-5 h-5 text-yellow-400 fill-current" />
+              <span className="font-bold">{producto.rating}</span>
+              <span className="text-gray-400 text-sm">({producto.reviews} reseñas)</span>
             </div>
 
-            {/* Rating */}
-            <div className="flex items-center gap-3">
-              <div className="flex">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className={`w-5 h-5 ${i < Math.floor(producto.rating) ? "text-yellow-400 fill-current" : "text-gray-300"}`} />
-                ))}
-              </div>
-              <span className="text-gray-600 text-sm">({producto.rating}) • {producto.reviews} reseñas</span>
-            </div>
+            <p className="text-gray-600 mb-8 leading-relaxed">{producto.descripcion}</p>
 
-            <p className="text-lg text-gray-700 leading-relaxed">
-              {producto.descripcion}
-            </p>
+            <div className="text-3xl font-bold text-pink-600 mb-8">${(producto.precio / 100).toFixed(2)} MXN</div>
 
-            {/* Precio */}
-            <div className="bg-gradient-to-r from-pink-100 to-pink-50 rounded-2xl p-6 text-center">
-              <p className="text-4xl font-bold text-pink-600">
-                ${(producto.precio / 100).toFixed(2)}
-                <span className="text-xl font-normal text-gray-600"> MXN</span>
-              </p>
-            </div>
-
-            {/* Botón carrito */}
-            <button
-              onClick={agregarAlCarrito}
-              className="w-full bg-pink-600 hover:bg-pink-700 text-white font-bold text-lg py-4 rounded-full shadow-xl transition-all flex items-center justify-center gap-3 active:scale-95"
-            >
-              <ShoppingBag className="w-5 h-5" />
-              Agregar al Carrito
-            </button>
-
-             {/* QR Code - Más pequeño y al lado de la imagen principal en móvil */}
-            <div className="bg-white rounded-2xl p-6 shadow-xl text-center">
-              <h3 className="text-lg font-bold text-gray-800 mb-3">Escanea el QR</h3>
-              <p className="text-sm text-gray-600 mb-4">Comparte este producto con tus amigos</p>
-              <div className="flex justify-center">
-                <div className="relative rounded-xl overflow-hidden max-w-[200px]">
-                  <Image
-                    src={producto.qr}
-                    alt={`QR Code de ${producto.nombre}`}
-                    width={200}
-                    height={200}
-                    className="object-cover w-full h-full"
-                  />
+            {/* Solo mostrar controles de compra si está AUTENTICADO */}
+            {autenticado ? (
+              <div className="space-y-4">
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center border-2 border-pink-100 rounded-full p-1">
+                    <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="p-2 hover:bg-pink-50 rounded-full transition"><Minus className="w-4 h-4"/></button>
+                    <span className="w-8 text-center font-bold">{quantity}</span>
+                    <button onClick={() => setQuantity(q => q + 1)} className="p-2 hover:bg-pink-50 rounded-full transition"><Plus className="w-4 h-4"/></button>
+                  </div>
+                  <button onClick={agregarAlCarrito} className="flex-1 bg-pink-600 text-white py-4 rounded-full font-bold shadow-lg hover:bg-pink-700 transition flex items-center justify-center gap-2">
+                    <ShoppingBag className="w-5 h-5" /> Agregar al Carrito
+                  </button>
                 </div>
               </div>
-            </div>
-
+            ) : (
+              <Link href="/login" className="w-full bg-gray-800 text-white py-4 rounded-full font-bold text-center block hover:bg-gray-900">
+                Inicia sesión para comprar
+              </Link>
+            )}
           </div>
         </div>
       </div>

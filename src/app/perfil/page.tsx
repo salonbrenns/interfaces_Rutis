@@ -3,31 +3,72 @@
 
 import Image from "next/image"
 import Link from "next/link"
+import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 import { User, Calendar, Mail, Phone, MapPin, Edit2, LogOut, Heart, Clock, CreditCard } from "lucide-react"
+import AuthGuard from "@/components/ui/AuthGuard"
+import Breadcrumb from "@/components/Breadcrumb"
 
 export default function PerfilPage() {
-  // Datos de ejemplo (tú los puedes cambiar después)
-  const usuario = {
-    nombre: "Ruth Barrientos Angeles",
-    correo: "ruth.barrientos@uthh.edu.mx",
+  const router = useRouter()
+  const [usuario, setUsuario] = useState({
+    nombre: "Cargando...",
+    correo: "cargando...",
     telefono: "+52 961 123 4567",
-    miembroDesde: "Noviembre 2025",
+    miembroDesde: "Cargando...",
     nivel: "Estudiante PRO",
     cursosInscritos: 3,
     citasPendientes: 2,
     favoritos: 8,
+  })
+  const [primerLetra, setPrimerLetra] = useState("U")
+
+  useEffect(() => {
+    // Cargar datos del usuario desde localStorage
+    if (typeof window !== "undefined") {
+      const nombre = localStorage.getItem("user_nombre") || "Usuario"
+      const correo = localStorage.getItem("user_email") || "correo@ejemplo.com"
+      const fecha = localStorage.getItem("user_fecha") || "Recientemente"
+
+      setUsuario(prev => ({
+        ...prev,
+        nombre,
+        correo,
+        miembroDesde: fecha
+      }))
+      setPrimerLetra(nombre.charAt(0).toUpperCase())
+    }
+  }, [])
+
+  const handleLogout = () => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("auth_token")
+      localStorage.removeItem("user_email")
+      localStorage.removeItem("user_nombre")
+      localStorage.removeItem("user_fecha")
+      sessionStorage.removeItem("auth_active")
+      // Disparar evento para que el Header se actualice
+      window.dispatchEvent(new Event("auth-changed"))
+    }
+    router.push("/login")
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-pink-50 py-8 sm:py-12">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6">
+    <AuthGuard>
+      <main className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-pink-50 py-8 sm:py-12">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+
+        <Breadcrumb items={[
+          { label: "Inicio", href: "/" },
+          { label: "Mi Perfil", href: "#", active: true }
+        ]} />
 
         {/* Header del perfil */}
         <div className="bg-white rounded-3xl shadow-2xl p-6 sm:p-10 mb-8 border border-pink-100">
           <div className="flex flex-col sm:flex-row items-center gap-6 sm:gap-10">
             <div className="relative">
               <div className="w-32 h-32 sm:w-40 sm:h-40 bg-gradient-to-br from-pink-400 to-pink-600 rounded-full flex items-center justify-center text-white text-5xl sm:text-6xl font-bold shadow-xl">
-                R
+                {primerLetra}
               </div>
               <button className="absolute bottom-2 right-2 bg-white p-3 rounded-full shadow-lg hover:scale-110 transition">
                 <Edit2 className="w-5 h-5 text-pink-600" />
@@ -44,7 +85,7 @@ export default function PerfilPage() {
               <button className="bg-pink-600 hover:bg-pink-700 text-white font-bold px-8 py-4 rounded-full shadow-lg transition transform hover:scale-105">
                 Editar Perfil
               </button>
-              
+        
             </div>
           </div>
         </div>
@@ -58,9 +99,9 @@ export default function PerfilPage() {
               <div className="space-y-5">
                 <div className="flex items-center gap-4">
                   <Mail className="w-6 h-6 text-pink-600" />
-                  <div>
+                  <div className="break-all">
                     <p className="text-sm text-gray-600">Correo</p>
-                    <p className="font-medium">{usuario.correo}</p>
+                    <p className="font-medium text-sm">{usuario.correo}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
@@ -136,7 +177,8 @@ export default function PerfilPage() {
             </div>
           </div>
         </div>
-      </div>
-    </main>
+        </div>
+      </main>
+    </AuthGuard>
   )
 }

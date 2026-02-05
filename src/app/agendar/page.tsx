@@ -2,7 +2,9 @@
 "use client"
 
 import { useState } from "react"
-import { ChevronLeft, ChevronRight, Clock, Calendar, User } from "lucide-react"
+import AuthGuard from "@/components/ui/AuthGuard"
+import Breadcrumb from "@/components/Breadcrumb"
+import { ChevronLeft, ChevronRight, Clock, Calendar, User, ArrowLeft } from "lucide-react"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
 import Link from "next/link"
@@ -18,193 +20,191 @@ export default function AgendarPage() {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   const [selectedTime, setSelectedTime] = useState<string | null>(null)
 
-  const today = new Date(2025, 10, 21) // 21 nov 2025
+  const today = new Date(2025, 10, 21)
   const [currentMonth] = useState(today)
 
-  const daysInMonth = Array.from({ length: 30 }, (_, i) => {
-    const date = new Date(2025, 10, i + 1)
-    return date
-  })
+  const daysInMonth = Array.from({ length: 30 }, (_, i) => new Date(2025, 10, i + 1))
 
   const horariosManana = ["10:00 am", "10:30 am", "11:00 am", "11:30 am"]
   const horariosTarde = ["1:00 pm", "1:30 pm", "2:00 pm", "2:30 pm", "3:00 pm", "4:00 pm", "5:00 pm"]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 to-white py-12">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="grid lg:grid-cols-3 gap-10">
-          {/* Calendario */}
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-3xl shadow-xl p-8">
-              <div className="text-xl font-bold text-pink-600 mb-8">
-                Selecciona fecha y hora de tu servicio
-              </div>
-
-              <div className="flex gap-4 mb-10">
-                <div className="px-8 py-4 rounded-full bg-pink-600 text-white font-bold">Fecha y Hora</div>
-                <div className="px-8 py-4 rounded-full bg-gray-200 text-gray-600 font-bold">Datos del Contacto</div>
-              </div>
-
-              <div className="bg-white rounded-3xl shadow-inner p-8">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-3xl font-bold text-pink-600">
-                    {format(currentMonth, "MMMM yyyy", { locale: es })}
-                  </h2>
-                  <div className="flex gap-3">
-                    {/* BOTONES CORREGIDOS */}
-                    <button
-                      aria-label="Mes anterior"
-                      className="p-3 bg-pink-100 rounded-full hover:bg-pink-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 transition"
-                    >
-                      <ChevronLeft className="w-6 h-6 text-pink-600" />
-                    </button>
-                    <button
-                      aria-label="Mes siguiente"
-                      className="p-3 bg-pink-100 rounded-full hover:bg-pink-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 transition"
-                    >
-                      <ChevronRight className="w-6 h-6 text-pink-600" />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Días de la semana */}
-                <div className="grid grid-cols-7 gap-3 text-center mb-6">
-                  {["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"].map(d => (
-                    <div key={d} className="text-gray-500 font-medium">{d}</div>
-                  ))}
-                </div>
-
-                {/* Días del mes */}
-                <div className="grid grid-cols-7 gap-3 text-center">
-                  {daysInMonth.map((date, i) => {
-                    const isPast = date < today
-                    const isSelected = selectedDate?.toDateString() === date.toDateString()
-
-                    return (
-                      <button
-                        key={i}
-                        onClick={() => !isPast && setSelectedDate(date)}
-                        disabled={isPast}
-                        aria-label={format(date, "d 'de' MMMM 'de' yyyy", { locale: es })}
-                        className={`p-4 rounded-full text-lg font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 ${
-                          isSelected
-                            ? "bg-pink-600 text-white"
-                            : isPast
-                            ? "text-gray-400 cursor-not-allowed"
-                            : "hover:bg-pink-100"
-                        }`}
-                      >
-                        {date.getDate()}
-                      </button>
-                    )
-                  })}
-                </div>
-
-                {/* Horarios */}
-                {selectedDate && (
-                  <div className="mt-10">
-                    <div className="grid grid-cols-2 gap-6">
-                      <div>
-                        <h3 className="font-bold text-lg mb-4 text-pink-600">Mañana</h3>
-                        <div className="grid grid-cols-2 gap-3">
-                          {horariosManana.map(hora => (
-                            <button
-                              key={hora}
-                              onClick={() => setSelectedTime(hora)}
-                              aria-label={`Seleccionar horario ${hora}`}
-                              className={`py-3 px-5 rounded-full border-2 font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 ${
-                                selectedTime === hora
-                                  ? "bg-pink-600 text-white border-pink-600"
-                                  : "border-pink-200 hover:border-pink-400"
-                              }`}
-                            >
-                              {hora}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                      <div>
-                        <h3 className="font-bold text-lg mb-4 text-pink-600">Tarde</h3>
-                        <div className="grid grid-cols-3 gap-3">
-                          {horariosTarde.map(hora => (
-                            <button
-                              key={hora}
-                              onClick={() => setSelectedTime(hora)}
-                              aria-label={`Seleccionar horario ${hora}`}
-                              className={`py-3 px-5 rounded-full border-2 font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 ${
-                                selectedTime === hora
-                                  ? "bg-pink-600 text-white border-pink-600"
-                                  : "border-pink-200 hover:border-pink-400"
-                              }`}
-                            >
-                              {hora}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Botón Continuar al pago */}
-              {selectedDate && selectedTime && (
-                <div className="text-center mt-10">
-                  <Link
-                    href={{
-                      pathname: "/pago",
-                      query: {
-                        servicio: servicioSeleccionado.nombre,
-                        precio: servicioSeleccionado.precio,
-                        fecha: selectedDate.toISOString(),
-                        hora: selectedTime,
-                        duracion: servicioSeleccionado.duracion,
-                      },
-                    }}
-                  >
-                    <button className="bg-pink-600 hover:bg-pink-700 text-white font-bold text-2xl px-16 py-7 rounded-full shadow-2xl transition transform hover:scale-105 inline-flex items-center gap-4 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-pink-300">
-                      Continuar al pago seguro
-                    </button>
-                  </Link>
-                </div>
-              )}
-            </div>
+    <AuthGuard>
+      {/* Reducimos pt-12 a pt-4 para que todo suba al tope */}
+      <div className="min-h-screen bg-gradient-to-br from-pink-50 to-white pt-4 pb-12">
+        <div className="max-w-7xl mx-auto px-6">
+          
+          {/* Header Ultra-Compacto */}
+          <div className="space-y-1 mb-4"> 
+            <Link 
+              href="/agendar" 
+              className="inline-flex items-center gap-1 text-pink-600 hover:text-pink-700 font-semibold text-xs group"
+            >
+              
+            </Link>
+            <Breadcrumb items={[
+              { label: "Servicios", href: "/servicios-publicas" },
+              { label: "Agendar Cita", href: "#", active: true }
+            ]} />
           </div>
 
-          {/* Panel lateral - Resumen */}
-          <div className="lg:col-span-1">
-            <div className="bg-gradient-to-br from-pink-100 to-pink-50 rounded-3xl shadow-2xl p-8 sticky top-24">
-              <h3 className="text-2xl font-bold text-pink-600 mb-8">Información del servicio</h3>
-              <div className="bg-white/70 rounded-2xl p-6 space-y-5">
-                <h4 className="text-xl font-bold text-gray-800">{servicioSeleccionado.nombre}</h4>
-                <div className="space-y-4 text-gray-700">
-                  <div className="flex items-center gap-4">
-                    <span className="text-4xl font-bold text-pink-600">
-                      ${servicioSeleccionado.precio} MXN
+          <div className="grid lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2">
+              {/* Reducimos p-8 a p-5 o p-6 */}
+              <div className="bg-white rounded-3xl shadow-xl p-5 md:p-7">
+                
+                {/* Título y pasos en la misma línea para ahorrar espacio vertical */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                  <h1 className="text-xl font-bold text-pink-600">
+                    Selecciona fecha y hora
+                  </h1>
+                  <div className="flex gap-2">
+                    <span className="px-4 py-1.5 rounded-full bg-pink-600 text-white text-xs font-bold shadow-sm">
+                      1. Fecha y Hora
+                    </span>
+                    <span className="px-4 py-1.5 rounded-full bg-gray-100 text-gray-500 text-xs font-bold">
+                      2. Contacto
                     </span>
                   </div>
-                  {selectedDate && (
-                    <div className="flex items-center gap-4">
-                      <Calendar className="w-6 h-6 text-pink-600" />
-                      <span>{format(selectedDate, "d 'de' MMMM 'de' yyyy", { locale: es })}</span>
+                </div>
+
+                <div className="bg-pink-50/40 rounded-3xl p-5 border border-pink-100">
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-2xl font-bold text-pink-700 capitalize">
+                      {format(currentMonth, "MMMM yyyy", { locale: es })}
+                    </h2>
+                    <div className="flex gap-2">
+                      <button className="p-2 bg-white rounded-full shadow-sm hover:bg-pink-100 transition border border-pink-100">
+                        <ChevronLeft className="w-5 h-5 text-pink-600" />
+                      </button>
+                      <button className="p-2 bg-white rounded-full shadow-sm hover:bg-pink-100 transition border border-pink-100">
+                        <ChevronRight className="w-5 h-5 text-pink-600" />
+                      </button>
                     </div>
-                  )}
-                  {selectedTime && (
-                    <div className="flex items-center gap-4">
-                      <Clock className="w-6 h-6 text-pink-600" />
-                      <span>Hora: {selectedTime}</span>
-                    </div>
-                  )}
-                  <div className="flex items-center gap-4">
-                    <User className="w-6 h-6 text-pink-600" />
-                    <span>{servicioSeleccionado.profesional}</span>
                   </div>
+
+                  {/* Calendario */}
+                  <div className="grid grid-cols-7 gap-1 text-center mb-2">
+                    {["Lu", "Ma", "Mi", "Ju", "Vi", "Sá", "Do"].map(d => (
+                      <div key={d} className="text-pink-400 text-[10px] font-bold uppercase tracking-widest">{d}</div>
+                    ))}
+                  </div>
+
+                  <div className="grid grid-cols-7 gap-1.5 text-center">
+                    {daysInMonth.map((date, i) => {
+                      const isPast = date < today
+                      const isSelected = selectedDate?.toDateString() === date.toDateString()
+                      return (
+                        <button
+                          key={i}
+                          onClick={() => !isPast && setSelectedDate(date)}
+                          disabled={isPast}
+                          className={`aspect-square flex items-center justify-center rounded-xl text-sm font-bold transition-all ${
+                            isSelected
+                              ? "bg-pink-600 text-white shadow-md scale-105"
+                              : isPast
+                              ? "text-gray-300 cursor-not-allowed"
+                              : "bg-white hover:bg-pink-100 text-gray-700 border border-transparent hover:border-pink-200"
+                          }`}
+                        >
+                          {date.getDate()}
+                        </button>
+                      )
+                    })}
+                  </div>
+
+                  {/* Sección de Horarios */}
+                  {selectedDate && (
+                    <div className="mt-6 pt-6 border-t border-pink-100 animate-in fade-in zoom-in-95 duration-300">
+                      <div className="grid md:grid-cols-2 gap-6">
+                        <div>
+                          <h3 className="font-bold text-pink-600 mb-3 text-sm flex items-center gap-2">
+                            <Clock className="w-4 h-4" /> Mañana
+                          </h3>
+                          <div className="grid grid-cols-2 gap-2">
+                            {horariosManana.map(hora => (
+                              <button
+                                key={hora}
+                                onClick={() => setSelectedTime(hora)}
+                                className={`py-2 rounded-xl text-xs font-semibold border-2 transition-all ${
+                                  selectedTime === hora
+                                    ? "bg-pink-600 text-white border-pink-600"
+                                    : "bg-white border-pink-100 hover:border-pink-300 text-gray-600"
+                                }`}
+                              >
+                                {hora}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-pink-600 mb-3 text-sm flex items-center gap-2">
+                            <Clock className="w-4 h-4" /> Tarde
+                          </h3>
+                          <div className="grid grid-cols-3 gap-2">
+                            {horariosTarde.map(hora => (
+                              <button
+                                key={hora}
+                                onClick={() => setSelectedTime(hora)}
+                                className={`py-2 rounded-xl text-xs font-semibold border-2 transition-all ${
+                                  selectedTime === hora
+                                    ? "bg-pink-600 text-white border-pink-600"
+                                    : "bg-white border-pink-100 hover:border-pink-300 text-gray-600"
+                                }`}
+                              >
+                                {hora}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Resumen lateral */}
+            <div className="lg:col-span-1">
+              <div className="bg-white rounded-3xl shadow-xl p-6 sticky top-4 border border-pink-50">
+                <h3 className="text-lg font-bold text-pink-600 mb-4">Tu Cita</h3>
+                <div className="space-y-4">
+                  <div className="p-4 bg-pink-50/50 rounded-2xl border border-pink-100">
+                    <h4 className="font-bold text-gray-800 text-sm mb-1">{servicioSeleccionado.nombre}</h4>
+                    <p className="text-pink-600 font-extrabold text-lg">${servicioSeleccionado.precio} MXN</p>
+                  </div>
+                  
+                  <div className="space-y-3 px-1">
+                    {selectedDate && (
+                      <div className="flex items-center gap-3 text-xs text-gray-600">
+                        <Calendar className="w-4 h-4 text-pink-400" />
+                        <span className="font-medium">{format(selectedDate, "d 'de' MMMM, yyyy", { locale: es })}</span>
+                      </div>
+                    )}
+                    {selectedTime && (
+                      <div className="flex items-center gap-3 text-xs text-gray-600">
+                        <Clock className="w-4 h-4 text-pink-400" />
+                        <span className="font-medium">{selectedTime}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {selectedDate && selectedTime && (
+                    <Link
+                      href={{ pathname: "/pago", query: { /* datos */ } }}
+                      className="block pt-2"
+                    >
+                      <button className="w-full bg-pink-600 hover:bg-pink-700 text-white font-bold py-3 rounded-xl shadow-lg transition-all active:scale-95">
+                        Confirmar y Pagar
+                      </button>
+                    </Link>
+                  )}
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </AuthGuard>
   )
 }

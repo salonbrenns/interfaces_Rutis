@@ -1,77 +1,49 @@
-// src/components/Footer.tsx
-import { FaFacebook, FaInstagram, FaWhatsapp } from 'react-icons/fa';
+import { MapPin, Facebook, Instagram, Phone } from "lucide-react";
 
 export default function Footer() {
   return (
-    <footer className="bg-pink-700 text-white mt-20">
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 text-center md:text-left">
-          
-          {/* Columna de Contacto y Redes Sociales */}
+    <footer className="bg-gray-900 text-white py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid md:grid-cols-3 gap-8">
           <div>
-            <h3 className="text-2xl font-bold mb-4">Brenn's</h3>
-            
-            <h4 className="opacity-90 font-semibold mb-2">Contacto Directo</h4>
-            <p className="text-sm">+52 1 771 130 5400</p>
-
-            <h4 className="opacity-90 font-semibold mt-4 mb-2">Síguenos</h4>
-            <div className="flex justify-center md:justify-start space-x-4">
-              <a 
-                href="https://www.facebook.com/profile.php?id=61555802322496" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                aria-label="Facebook"
-                className="hover:text-pink-300 transition-colors"
-              >
-                <FaFacebook size={24} />
-              </a>
-              <a 
-                href="#" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                aria-label="Instagram"
-                className="hover:text-pink-300 transition-colors"
-              >
-                <FaInstagram size={24} />
-              </a>
-              <a 
-                href="https://wa.me/5217711305405" // Enlace directo a WhatsApp
-                target="_blank" 
-                rel="noopener noreferrer"
-                aria-label="WhatsApp"
-                className="hover:text-pink-300 transition-colors"
-              >
-                <FaWhatsapp size={24} />
-              </a>
-            </div>
-          </div>
-
-          {/* Columna de Ubicación */}
-          <div>
-            <h3 className="text-xl font-bold mb-4">Ubicación</h3>
-            <p>
-              Zona Centro, calle Juan Mogica Ugalde 5A. 
-              <span className="block text-sm opacity-80 mt-1">
-                -Una calle detras del cine, donde antes era uniformes Bekita, Huejutla de Reyes-
-              </span>
+            <h4 className="text-2xl font-bold mb-4">BRENN'S</h4>
+            <p className="text-gray-400">
+              Somos tu mejor opción en belleza y educación profesional en Huejutla.
             </p>
           </div>
 
-          {/* Columna con el nuevo título */}
           <div>
-            <h3 className="text-xl font-bold mb-4">Detalles</h3>
-            <ul className="space-y-1 text-sm">
-              <li>Academia Brenn´s tiene como objetivo principal, educar con excelencia a las Manicuristas y Pedicuristas de Huejutla y sus Alrededores.
-Además contamos con venta de material, a un costo accesible pero de excelente calidad.
-Somos tu mejor opción.</li>
-            </ul>
+            <h5 className="font-semibold mb-4 flex items-center gap-2">
+              <MapPin className="w-5 h-5" />
+              Ubicación
+            </h5>
+            <p className="text-gray-400">
+              Zona Centro, calle Juan Mogica Ugalde 5A<br />
+              (Una calle detrás del cine, donde antes era uniformes Bekita)<br />
+              Huejutla de Reyes, Hidalgo
+            </p>
+          </div>
+
+          <div>
+            <h5 className="font-semibold mb-4">Redes Sociales</h5>
+            <div className="flex gap-4">
+              <div className="w-10 h-10 bg-pink-600 rounded-full flex items-center justify-center hover:bg-pink-500 transition cursor-pointer">
+                <Facebook className="w-5 h-5" />
+              </div>
+              <div className="w-10 h-10 bg-pink-600 rounded-full flex items-center justify-center hover:bg-pink-500 transition cursor-pointer">
+                <Instagram className="w-5 h-5" />
+              </div>
+              <div className="w-10 h-10 bg-pink-600 rounded-full flex items-center justify-center hover:bg-pink-500 transition cursor-pointer">
+                <Phone className="w-5 h-5" />
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="border-t border-white/30 mt-10 pt-8 text-center">
-          <p>© 2025 Brenn's • Hecho con amor en Huejutla de Reyes, Hidalgo ♡</p>
+        <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+          <p>© 2025 Brenn's. Todos los derechos reservados.</p>
         </div>
       </div>
     </footer>
-  )
+  );
 }

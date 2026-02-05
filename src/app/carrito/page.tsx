@@ -3,6 +3,8 @@
 
 import Image from "next/image"
 import Link from "next/link"
+import AuthGuard from "@/components/ui/AuthGuard"
+import Breadcrumb from "@/components/Breadcrumb"
 import { Trash2, Plus, Minus, ShoppingBag } from "lucide-react"
 
 const ENVIO_GRATIS_DESDE = 150000
@@ -10,11 +12,13 @@ const COSTO_ENVIO = 10000
 
 export default function CarritoPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 to-white py-12">
-      <div className="max-w-6xl mx-auto px-6">
-        <Link href="/catalogo" className="inline-flex items-center gap-2 text-pink-600 font-medium hover:underline mb-8">
-          ← Volver al Catálogo
-        </Link>
+    <AuthGuard>
+      <div className="min-h-screen bg-gradient-to-br from-pink-50 to-white py-12">
+        <div className="max-w-6xl mx-auto px-6">
+        <Breadcrumb items={[
+          { label: "Catálogo", href: "/catalogo-privada" },
+          { label: "Carrito", href: "#", active: true }
+        ]} />
 
         <div className="flex items-center gap-3 mb-10">
           <ShoppingBag className="w-10 h-10 text-pink-600" />
@@ -26,8 +30,9 @@ export default function CarritoPage() {
         <div suppressHydrationWarning>
           <CarritoClient />
         </div>
+        </div>
       </div>
-    </div>
+    </AuthGuard>
   )
 }
 
